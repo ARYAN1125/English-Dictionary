@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Dictionary</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #28a745;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            max-width: 350px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            display: flex;
+            align-items: center;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #28a745;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .search-bar button {
+            background-color: transparent;
+            border: none;
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+        }
+
+        .search-bar button img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .definition {
+            margin-top: 10px;
+        }
+
+        .definition h2 {
+            margin: 0;
+            font-size: 24px;
+            color: #28a745;
+        }
+
+        .definition p {
+            font-size: 16px;
+            color: #555;
+            margin: 5px 0;
+        }
+
+        .definition .meaning,
+        .definition .example,
+        .definition .synonyms {
+            border-left: 4px solid #28a745;
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        .definition .title {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .audio-icon {
+            cursor: pointer;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>English Dictionary</h1>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search a word...">
+            <button onclick="searchWord()">
+                <img src="https://img.icons8.com/ios-filled/50/28a745/search.png" alt="Search Icon">
+            </button>
+        </div>
+
+        <div class="definition" id="definition">
+            <h2 id="word">Word</h2>
+            <p><span id="type">noun</span> /<span id="pronunciation">pronunciation</span>/
+                <img id="audioIcon" class="audio-icon" src="https://img.icons8.com/ios-filled/50/28a745/speaker.png" alt="Audio" onclick="playAudio()" style="display: none;">
+            </p>
+
+            <div class="meaning">
+                <p class="title">Meaning</p>
+                <p id="meaning">Meaning of the word will appear here.</p>
+            </div>
+
+            <div class="example">
+                <p class="title">Example</p>
+                <p id="example">Example will appear here.</p>
+            </div>
+
+            <div class="synonyms">
+                <p class="title">Synonyms</p>
+                <p id="synonyms">Synonyms will appear here.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function searchWord() {
+            const query = document.getElementById("searchInput").value;
+            if (!query) {
+                alert("Please enter a word.");
+                return;
+            }
+
+            const apiUrl = `https://api.dictionaryapi.dev/api/v2/entries/en/${query}`;
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+
+            if (data.title) {
+                document.getElementById("word").innerText = "Word not found!";
+                document.getElementById("meaning").innerText = "No meaning found.";
+                document.getElementById("example").innerText = "No example available.";
+                document.getElementById("synonyms").innerText = "No synonyms available.";
+                document.getElementById("audioIcon").style.display = "none";
+            } else {
+                const result = data[0];
+                document.getElementById("word").innerText = result.word;
+                document.getElementById("type").innerText = result.meanings[0].partOfSpeech;
+                document.getElementById("pronunciation").innerText = result.phonetics[0]?.text || "N/A";
+                document.getElementById("meaning").innerText = result.meanings[0].definitions[0].definition;
+                document.getElementById("example").innerText = result.meanings[0].definitions[0].example || "No example available.";
+                document.getElementById("synonyms").innerText = result.meanings[0].synonyms.join(", ") || "No synonyms available.";
+
+                if (result.phonetics[0]?.audio) {
+                    document.getElementById("audioIcon").style.display = "inline";
+                    document.getElementById("audioIcon").setAttribute("data-audio", result.phonetics[0].audio);
+                } else {
+                    document.getElementById("audioIcon").style.display = "none";
+                }
+            }
+        }
+
+        function playAudio() {
+            const audioUrl = document.getElementById("audioIcon").getAttribute("data-audio");
+            if (audioUrl) {
+                const audio = new Audio(audioUrl);
+                audio.play();
+            }
+        }
+    </script>
+
+</body>
+</html>
